@@ -7,9 +7,23 @@ services:
       - '9229:9229'
     volumes:
       - ./app:/usr/src/app/app
+      - ./data:/output
     env_file:
       - ./docker/env/app.env
     command: 'node --run start:rest'
+    depends_on:
+      - mongo
+      - broker
+
+  processor:
+    build: .
+    image: image-resizer
+    volumes:
+      - ./app:/usr/src/app/app
+      - ./data:/output
+    env_file:
+      - ./docker/env/app.env
+    command: 'node --run start:processor'
     depends_on:
       - mongo
       - broker
@@ -21,6 +35,7 @@ services:
     volumes:
       - mongo_config:/data/configdb
       - mongo_data:/data/db
+      - ./docker/db/init.js:/docker-entrypoint-initdb.d/init.js
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.2
