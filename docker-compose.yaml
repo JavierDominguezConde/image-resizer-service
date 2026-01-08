@@ -1,4 +1,19 @@
 services:
+  rest:
+    build: .
+    image: image-resizer
+    ports:
+      - '3002:3002'
+      - '9229:9229'
+    volumes:
+      - ./app:/usr/src/app/app
+    env_file:
+      - ./docker/env/app.env
+    command: 'node --run start:rest'
+    depends_on:
+      - mongo
+      - broker
+
   mongo:
     image: mongo:8.2.1
     ports:
