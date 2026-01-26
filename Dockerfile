@@ -9,4 +9,7 @@ RUN npm ci --omit=dev
 
 COPY --chown=node:node app ./app
 
+# Create output directory structure
+RUN mkdir -p /output/tmp && chown -R node:node /output
+
 USER node

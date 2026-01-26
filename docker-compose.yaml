@@ -7,26 +7,30 @@ services:
       - '9229:9229'
     volumes:
       - ./app:/usr/src/app/app
-      - ./data:/output
+      - output_data:/output
     env_file:
       - ./docker/env/app.env
     command: 'node --run start:rest'
     depends_on:
-      - mongo
-      - broker
+      mongo:
+        condition: service_started
+      broker:
+        condition: service_healthy
 
   processor:
     build: .
     image: image-resizer
     volumes:
       - ./app:/usr/src/app/app
-      - ./data:/output
+      - output_data:/output
     env_file:
       - ./docker/env/app.env
     command: 'node --run start:processor'
     depends_on:
-      - mongo
-      - broker
+      mongo:
+        condition: service_started
+      broker:
+        condition: service_healthy
 
   mongo:
     image: mongo:8.2.1
@@ -63,6 +67,12 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
     depends_on:
       - zookeeper
+    healthcheck:
+      test:
+        ['CMD', 'kafka-topics', '--bootstrap-server', 'broker:19092', '--list']
+      interval: 30s
+      timeout: 10s
+      retries: 5
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     ports:
@@ -74,6 +84,16 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker:19092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
 
+  # Optional: Service to inspect generated files
+  file-browser:
+    image: filebrowser/filebrowser:latest
+    ports:
+      - '8081:80'
+    volumes:
+      - output_data:/srv
+    environment:
+      - FB_BASEURL=/files
+
 volumes:
   mongo_config:
   mongo_data:
@@ -82,3 +102,4 @@ volumes:
   zoo_secrets:
   kafka_data:
   kafka_secrets:
+  output_data:
