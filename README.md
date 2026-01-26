@@ -40,9 +40,7 @@ To launch the project in a local environment, a docker-compose file is provided.
 docker compose up -d
 ```
 
-This will start both the REST service (port 3002 by default) and the consumer/processor. It will also launch an instance of mongo for the persistance and a kafka cluster to be used as the message broker. A web visualizer for the broker queues is also included in case it is needed for testing/debugging, exposed at port 8080.
-
-> **Note**: By default, the services startup wait for the broker to be already started, but due to race condition, depending on your machine they could get stuck at startup. To solve this problem, just restart both the service and the consumer by executing `docker compose restart rest processor`.
+This will start both the REST service (port 3002 by default) and the consumer/processor. It will also launch an instance of mongo for the persistance and a kafka cluster to be used as the message broker. A web visualizer for the broker queues is also included in case it is needed for testing/debugging, exposed at port 8080, and a file storage visualizer in port 8081 to manage the image files inside the service.
 
 Once you are finished with the service, to stop it simple execute: 
 
@@ -52,7 +50,6 @@ docker compose down -v
 
 This setup has multiple volumes from the repository mounted in the containers, for configuration and persistance.
 
-- The `data` folder (top level of the repository) will store all the images that the processor will be able to see and process. This also helps when you want to visualize whether the service is working correctly or not. On startup this folder will be created if it does not eist already.
 - The `app` folder (top level of the repository) is mounted in the services to avoid having to recreate the Docker images if you make a change in your code. This does not affect the dependencies, if any change is made in those, then it is required to recreate the image for those changes to take effect.
 - The `docker/db/init.js` is mounted on the mongo database to execute at startup, so we can have an initial set of data to query in the service.
 - The `docker/env/app.env` is not mounted as such, but is used instead as environment variables for the services.
